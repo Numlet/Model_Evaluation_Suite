@@ -10,16 +10,16 @@ Institute for climate and atmospheric science (ICAS)
 University of Leeds
 2017
 '''
-
+import numpy as np
 
 class Model_Array():
-    def __init__(self,data,dimensions,model_name="Unknown",dimensions_name=None):
+    def __init__(self,data,dimensions,model_name="Unknown",dimensions_name=0):
         self.ndim=len(dimensions)
         self.data=data
         self.dimensions=dimensions
         self.model_name=model_name
+        self.dimensions_name=dimensions_name
         if dimensions_name:
-            self.dimensions_name=dimensions_name
             if len(dimensions_name)!=len(dimensions):
                 raise StandardError('The number of dimensions is different from the number of dimension names given')
         if self.data.ndim!=self.ndim:
@@ -36,7 +36,7 @@ class Data_Array():
     where N is the number of observations and D is the number of dimensions on to which interpolate/compare to model data
     data[:,0] has to correspond to the values of the variable to compare
     '''
-    def __init__(self,data,dimensions_name=None,info='None'):
+    def __init__(self,data,dimensions_name=0,info='None'):
         self.data=data
         if dimensions_name:
             self.dimensions_name=dimensions_name
@@ -45,7 +45,7 @@ class Data_Array():
         self.info=info
         self.values=data[:,0]
         self.dimensions=data[:,1:]
-        self.ndim=self.dimensions.ndim
+        self.ndim=len(self.dimensions[0,:])
 
 
 def find_nearest_vector_index(array, value):
@@ -56,16 +56,19 @@ def find_nearest_vector_index(array, value):
 
 def Evaluate_data(M_array,D_array,method='Nearest'):
     if M_array.ndim!=D_array.ndim:
-        raise StandardError('Number of dimensions of Model data and observations not the same')
-    for i in range(M_array.dimensions):
+        raise StandardError('Number of dimensions of Model data (%i) and observations (%i) not the same'%(M_array.ndim,D_array.ndim))
+    for i in range(M_array.ndim):
         max_val=M_array.dimensions[i].max()
         min_val=M_array.dimensions[i].min()
         if any(D_array.dimensions[:,i]>max_val) or any (D_array.dimensions[:,i]<min_val):
-            raise StandardError('Observational data has some values with dimension %i not within\
-             the range of values of modelling data for that dimension')
+            print ('WARNING: Observational data has some values with dimension %i not within \
+             the range of values of modelling data for that dimension \
+             \n max: %f  \n min: %f  '%(i,max_val,min_val))
+            if M_array.dimensions_name:
+                print M_array.dimensions_name[i]
     if method=='Nearest':
         modelled_values=[]
-        for i in range(D_array.values):
+        for i in range(len(D_array.values)):
             index_list=[]
             for idim in range (M_array.ndim):
                 indxDim=find_nearest_vector_index(M_array.dimensions[idim],D_array.dimensions[i,idim])
