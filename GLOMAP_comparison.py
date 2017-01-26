@@ -46,11 +46,11 @@ marine_array=mes.Data_Array(marine_data,dimensions_name=dimension_names)
 # np.save('/Users/jesusvergaratemprado/work/INP/INP_feld_ext_alltemps_year_mean_cm.npy',INP_feld_ext_year_mean)
 # INP_feld_ext=np.load('/Users/jesusvergaratemprado/work/INP/INP_feld_ext_alltemps_year_mean_cm.npy')
 
-path_to_nc='/Users/jesusvergaratemprado/work/echamham/INP_echamham_niemand.nc'
+path_to_nc='/Users/jesusvergaratemprado/work/echamham/INP_GLOMAP_niemand.nc'
 
 nc_file=Dataset(path_to_nc)
 
-INP_total=nc_file.variables['INP_dust'][:,:,:,:]*1e-6
+INP_total=nc_file.variables['INP_dust'][:,:,:,:]
 
 print INP_total.shape
 
@@ -102,7 +102,7 @@ plt.xlabel('Observed [INP] ($cm^{-3}$)')
 plt.xscale('log')
 plt.yscale('log')
 
-plt.savefig('echamham_with_niemand.png')
+plt.savefig('GLOMAP_with_niemand.png')
 plt.show()
 
 
