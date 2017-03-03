@@ -97,6 +97,8 @@ plt.ylabel('Simulated [INP] ($cm^{-3}$)')
 plt.xlabel('Observed [INP] ($cm^{-3}$)')
 plt.xscale('log')
 plt.yscale('log')
+
+plt.savefig('GLOMAP_with_feldspar_marine.png')
 plt.show()
 
 

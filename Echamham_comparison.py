@@ -3,20 +3,22 @@ Test to evaluate wether if the evaluation suite is working correctly
 '''
 import ModelEvaluationSuite as mes
 reload(mes)
-import Jesuslib as jl
+# import Jesuslib as jl
 import numpy as np
 import matplotlib.pyplot as plt
 from netCDF4 import Dataset
-
+import iris
 header=1
+#%%
 data_terrestrial=np.genfromtxt('/Users/jesusvergaratemprado/work/INP_DATA/TERRESTIAL_INFLUENCED.dat',delimiter="\t",skip_header=header)
 data_marine=np.genfromtxt('/Users/jesusvergaratemprado/work/INP_DATA/MARINE_INFLUENCED.dat',delimiter="\t",skip_header=header)
 
+print 'starting'
 '''
 Dimensions
 Temperature,pressure,latitude,longitude
 '''
-dimension_names=['Temperature','pressure','latitude','longitude']
+dimension_names=['temperature','levels','lat','lon']
 
 
 terrestrial_data=np.zeros((len(data_terrestrial[:,0]),5))
@@ -47,17 +49,31 @@ marine_array=mes.Data_Array(marine_data,dimensions_name=dimension_names)
 # INP_feld_ext=np.load('/Users/jesusvergaratemprado/work/INP/INP_feld_ext_alltemps_year_mean_cm.npy')
 
 path_to_nc='/Users/jesusvergaratemprado/work/echamham/INP_echamham_niemand.nc'
-
+cube=iris.load(path_to_nc)[0]
 nc_file=Dataset(path_to_nc)
 
+points= marine_data[:,1:]
+
+values=[]
+for point in points:
+    print point
+    sample_point=[]
+    for i in range(len(dimension_names)):
+        sample_point.append((dimension_names[i],point[i]))
+    print sample_point
+    modelled_value=cube.interpolate(sample_point, iris.analysis.Linear()).data
+    print modelled_value
+    values.append(modelled_value)
+#%%
 INP_total=nc_file.variables['INP_dust'][:,:,:,:]*1e-6
 
 print INP_total.shape
-
+#%%
 INP_glomap_dimensions=[]
+
 temperatures=nc_file.variables['temperature'][:]
 INP_glomap_dimensions.append(temperatures)
-pressures=nc_file.variables['pressure'][:]
+pressures=nc_file.variables['levels'][:]
 INP_glomap_dimensions.append(pressures)
 INP_glomap_dimensions.append(nc_file.variables['lat'][:])
 
@@ -68,8 +84,8 @@ INP_glomap_dimensions.append(longitudes)
 glomap_array=mes.Model_Array(data=INP_total,dimensions=INP_glomap_dimensions,dimensions_name=dimension_names)
 
 
-modelled_values,observed_values,dimensional_values=mes.Evaluate_data(M_array=glomap_array,D_array=terrestrial_array)
-modelled_values_marine,observed_values_marine,dimensional_values_marine=mes.Evaluate_data(M_array=glomap_array,D_array=marine_array)
+modelled_values,observed_values,dimensional_values=mes.Evaluate_data(M_array=glomap_array,D_array=terrestrial_array,method='Linear')
+modelled_values_marine,observed_values_marine,dimensional_values_marine=mes.Evaluate_data(M_array=glomap_array,D_array=marine_array,method='Linear')
 
 
 
